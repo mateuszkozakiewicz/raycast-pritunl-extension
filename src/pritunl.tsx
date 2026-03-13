@@ -1,4 +1,15 @@
-import { ActionPanel, List, Action, Icon, Color, showToast, Toast, getPreferenceValues, openExtensionPreferences, LocalStorage } from "@raycast/api";
+import {
+  ActionPanel,
+  List,
+  Action,
+  Icon,
+  Color,
+  showToast,
+  Toast,
+  getPreferenceValues,
+  openExtensionPreferences,
+  LocalStorage,
+} from "@raycast/api";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { useEffect, useRef, useState } from "react";
@@ -51,7 +62,9 @@ async function getCLIPath(): Promise<string> {
       exePath = await resolveLnkTarget(exePath);
     }
     if (!exePath.toLowerCase().endsWith("pritunl.exe")) {
-      throw new InvalidCLIPathError("Could not resolve a valid .exe path from the selected application.");
+      throw new InvalidCLIPathError(
+        "Could not resolve a valid .exe path from the selected application.",
+      );
     }
     return exePath.replace(/pritunl\.exe$/i, "pritunl-client.exe");
   }
@@ -64,14 +77,18 @@ function formatUptime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  return [h ? `${h}h` : null, m ? `${m}m` : null, `${s}s`].filter(Boolean).join(" ");
+  return [h ? `${h}h` : null, m ? `${m}m` : null, `${s}s`]
+    .filter(Boolean)
+    .join(" ");
 }
 
 export default function Command() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [invalidCLI, setInvalidCLI] = useState(false);
-  const [savedProtocols, setSavedProtocols] = useState<Record<string, "ovpn" | "wg">>({});
+  const [savedProtocols, setSavedProtocols] = useState<
+    Record<string, "ovpn" | "wg">
+  >({});
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingRef = useRef<Map<string, PendingConnection>>(new Map());
 
@@ -111,16 +128,22 @@ export default function Command() {
         }
         if (profile.connected) {
           await pending.toast.hide();
-          await showToast({ style: Toast.Style.Success, title: "Connected", message: profile.name });
+          await showToast({
+            style: Toast.Style.Success,
+            title: "Connected",
+            message: profile.name,
+          });
           pendingRef.current.delete(profileId);
           continue;
         }
         if (profile.status === "Connecting") {
-          const elapsed = (profile.uptime - pending.startedAt);
+          const elapsed = profile.uptime - pending.startedAt;
           if (elapsed > CONNECT_TIMEOUT_SECS) {
             try {
               await execAsync(`"${cliPath}" stop ${profileId}`);
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
             await pending.toast.hide();
             await showToast({
               style: Toast.Style.Failure,
@@ -143,7 +166,11 @@ export default function Command() {
           intervalRef.current = null;
         }
       } else {
-        await showToast({ style: Toast.Style.Failure, title: "Failed to load profiles", message: String(err) });
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "Failed to load profiles",
+          message: String(err),
+        });
       }
     } finally {
       setIsLoading(false);
@@ -162,12 +189,16 @@ export default function Command() {
     const willEnable = profile.state === "Disabled";
     const toast = await showToast({
       style: Toast.Style.Animated,
-      title: willEnable ? "Enabling autostart\u2026" : "Disabling autostart\u2026",
+      title: willEnable
+        ? "Enabling autostart\u2026"
+        : "Disabling autostart\u2026",
       message: profile.name,
     });
     try {
       const cliPath = await getCLIPath();
-      await execAsync(`"${cliPath}" ${willEnable ? "enable" : "disable"} ${profile.id}`);
+      await execAsync(
+        `"${cliPath}" ${willEnable ? "enable" : "disable"} ${profile.id}`,
+      );
       toast.style = Toast.Style.Success;
       toast.title = willEnable ? "Autostart enabled" : "Autostart disabled";
       toast.message = profile.name;
@@ -179,22 +210,34 @@ export default function Command() {
     }
   }
 
-  async function toggleConnection(profile: Profile, overrideProtocol?: "ovpn" | "wg") {
+  async function toggleConnection(
+    profile: Profile,
+    overrideProtocol?: "ovpn" | "wg",
+  ) {
     const isActive = profile.run_state === "Active";
-    const effectiveProtocol = overrideProtocol ?? savedProtocols[profile.id] ?? "ovpn";
+    const effectiveProtocol =
+      overrideProtocol ?? savedProtocols[profile.id] ?? "ovpn";
     if (overrideProtocol) {
       await saveProtocol(profile.id, overrideProtocol);
     }
     const toast = await showToast({
       style: Toast.Style.Animated,
-      title: isActive ? `Disconnecting ${profile.name}` : `Connecting ${profile.name}`,
+      title: isActive
+        ? `Disconnecting ${profile.name}`
+        : `Connecting ${profile.name}`,
       message: `mode: ${effectiveProtocol.toUpperCase()}`,
     });
     try {
       const cliPath = await getCLIPath();
       if (!isActive) {
-        await execAsync(`"${cliPath}" start ${profile.id} -m ${effectiveProtocol}`);
-        pendingRef.current.set(profile.id, { protocol: effectiveProtocol, toast, startedAt: Date.now() / 1000 });
+        await execAsync(
+          `"${cliPath}" start ${profile.id} -m ${effectiveProtocol}`,
+        );
+        pendingRef.current.set(profile.id, {
+          protocol: effectiveProtocol,
+          toast,
+          startedAt: Date.now() / 1000,
+        });
       } else {
         await execAsync(`"${cliPath}" stop ${profile.id}`);
         pendingRef.current.delete(profile.id);
@@ -214,7 +257,11 @@ export default function Command() {
       description="Open extension settings and select the Pritunl application."
       actions={
         <ActionPanel>
-          <Action title="Open Extension Settings" icon={Icon.Gear} onAction={openExtensionPreferences} />
+          <Action
+            title="Open Extension Settings"
+            icon={Icon.Gear}
+            onAction={openExtensionPreferences}
+          />
         </ActionPanel>
       }
     />
@@ -229,65 +276,91 @@ export default function Command() {
 
   return (
     <List isLoading={isLoading}>
-      {invalidCLI ? invalidCLIView : !isLoading && profiles.length === 0 ? emptyView : profiles.map((profile) => {
-        const isActive = profile.run_state === "Active";
-        const uptime = formatUptime(profile.uptime);
-        return (
-          <List.Item
-            key={profile.id}
-            icon={{
-              source: isActive ? Icon.CheckCircle : Icon.Circle,
-              tintColor: isActive ? Color.Green : Color.SecondaryText,
-            }}
-            title={profile.name}
-            subtitle={profile.connected ? "Connected" : profile.status === "Connecting" || profile.status.endsWith("secs") ? "Connecting" : "Disconnected"}
-            accessories={[
-              ...(profile.state === "Enabled" ? [{ tag: { value: "Autostart", color: Color.Green }, tooltip: "Autostart enabled" }] : []),
-              ...(profile.connected && profile.status !== "Connecting" ? [{ text: uptime, icon: Icon.Clock, tooltip: "Uptime" }] : []),
-              ...(profile.client_address ? [{ text: profile.client_address, tooltip: "Client IP" }] : []),
-            ]}
-            actions={
-              <ActionPanel>
-                <Action
-                  title={isActive ? "Disconnect" : "Connect"}
-                  icon={isActive ? Icon.XMarkCircle : Icon.Play}
-                  onAction={() => toggleConnection(profile)}
+      {invalidCLI
+        ? invalidCLIView
+        : !isLoading && profiles.length === 0
+          ? emptyView
+          : profiles.map((profile) => {
+              const isActive = profile.run_state === "Active";
+              const uptime = formatUptime(profile.uptime);
+              return (
+                <List.Item
+                  key={profile.id}
+                  icon={{
+                    source: isActive ? Icon.CheckCircle : Icon.Circle,
+                    tintColor: isActive ? Color.Green : Color.SecondaryText,
+                  }}
+                  title={profile.name}
+                  subtitle={
+                    profile.connected
+                      ? "Connected"
+                      : profile.status === "Connecting" ||
+                          profile.status.endsWith("secs")
+                        ? "Connecting"
+                        : "Disconnected"
+                  }
+                  accessories={[
+                    ...(profile.state === "Enabled"
+                      ? [
+                          {
+                            tag: { value: "Autostart", color: Color.Green },
+                            tooltip: "Autostart enabled",
+                          },
+                        ]
+                      : []),
+                    ...(profile.connected && profile.status !== "Connecting"
+                      ? [{ text: uptime, icon: Icon.Clock, tooltip: "Uptime" }]
+                      : []),
+                    ...(profile.client_address
+                      ? [{ text: profile.client_address, tooltip: "Client IP" }]
+                      : []),
+                  ]}
+                  actions={
+                    <ActionPanel>
+                      <Action
+                        title={isActive ? "Disconnect" : "Connect"}
+                        icon={isActive ? Icon.XMarkCircle : Icon.Play}
+                        onAction={() => toggleConnection(profile)}
+                      />
+                      {!isActive && (
+                        <ActionPanel.Section title="Select mode">
+                          <Action
+                            title="Connect with OpenVPN"
+                            icon={Icon.Plug}
+                            shortcut={{ modifiers: ["cmd"], key: "v" }}
+                            onAction={() => toggleConnection(profile, "ovpn")}
+                          />
+                          <Action
+                            title="Connect with WireGuard"
+                            icon={Icon.Plug}
+                            shortcut={{ modifiers: ["cmd"], key: "g" }}
+                            onAction={() => toggleConnection(profile, "wg")}
+                          />
+                        </ActionPanel.Section>
+                      )}
+                      <ActionPanel.Section title="Autostart">
+                        <Action
+                          title={
+                            profile.state === "Disabled"
+                              ? "Enable Autostart"
+                              : "Disable Autostart"
+                          }
+                          icon={Icon.Power}
+                          shortcut={{ modifiers: ["cmd"], key: "e" }}
+                          onAction={() => toggleAutostart(profile)}
+                        />
+                      </ActionPanel.Section>
+                      <Action
+                        title="Settings"
+                        icon={Icon.Gear}
+                        shortcut={{ modifiers: ["cmd"], key: "r" }}
+                        onAction={openExtensionPreferences}
+                      />
+                    </ActionPanel>
+                  }
                 />
-                {!isActive && (
-                  <ActionPanel.Section title="Select mode">
-                    <Action
-                      title="Connect with OpenVPN"
-                      icon={Icon.Plug}
-                      shortcut={{ modifiers: ["cmd"], key: "v" }}
-                      onAction={() => toggleConnection(profile, "ovpn")}
-                    />
-                    <Action
-                      title="Connect with WireGuard"
-                      icon={Icon.Plug}
-                      shortcut={{ modifiers: ["cmd"], key: "g" }}
-                      onAction={() => toggleConnection(profile, "wg")}
-                    />
-                  </ActionPanel.Section>
-                )}
-                <ActionPanel.Section title="Autostart">
-                  <Action
-                    title={profile.state === "Disabled" ? "Enable Autostart" : "Disable Autostart"}
-                    icon={Icon.Power}
-                    shortcut={{ modifiers: ["cmd"], key: "e" }}
-                    onAction={() => toggleAutostart(profile)}
-                  />
-                </ActionPanel.Section>
-                <Action
-                  title="Settings"
-                  icon={Icon.Gear}
-                  shortcut={{ modifiers: ["cmd"], key: "r" }}
-                  onAction={openExtensionPreferences}
-                />
-              </ActionPanel>
-            }
-          />
-        );
-      })}
+              );
+            })}
     </List>
   );
 }
