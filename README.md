@@ -16,7 +16,7 @@ To set profile as a System Profile:
 4. enable **System Profile**
 4. *optionally disable Autostart*
 
-![](./assets/system-profile.png)
+![](./media/system-profile.png)
 
 # Configuration
 
@@ -40,7 +40,7 @@ How long to wait before giving up, default is `30` (seconds).
 - connection uptime
 - client IP
 
-![](./assets/profile-list.png)
+![](./media/profile-list.png)
 
 ### Connect
 
@@ -48,10 +48,10 @@ Connection can be toggled by clicking on a selected profile.
 
 Optionally under **Actions** a mode can be selected (OpenVPN / WireGuard), using a different mode will save it as default for future connections for this profile.
 
-![](./assets/mode-selection.png)
+![](./media/mode-selection.png)
 
 ### Profile Autostart
 
 A profile can set to Autostart using the Actions menu. A UI indicator will be visible for a profile with Autostart enabled.
 
-![](./assets/autostart-toggle.png)
+![](./media/autostart-toggle.png)
