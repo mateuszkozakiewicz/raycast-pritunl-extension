@@ -111,6 +111,7 @@ export default function Command() {
       const { stdout } = await execAsync(`"${cliPath}" list -j`);
       setInvalidCLI(false);
       const freshProfiles: Profile[] = JSON.parse(stdout);
+      freshProfiles.sort((a, b) => a.name.localeCompare(b.name));
       setProfiles(freshProfiles);
 
       if (freshProfiles.length === 0) {
