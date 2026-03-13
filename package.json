@@ -1,17 +1,17 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "pritunl",
-  "title": "Pritunl",
+  "name": "pritunl-connections",
+  "title": "Pritunl Connections",
   "description": "Manage VPN connections from Raycast using Pritunl CLI",
   "icon": "extension-icon.png",
   "license": "MIT",
   "commands": [
     {
       "name": "pritunl",
-      "title": "Pritunl VPN connections",
-      "description": "Manage available Pritunl VPN connections",
+      "title": "Pritunl",
+      "description": "Manage VPN connections",
       "mode": "view",
-      "subtitle": ""
+      "subtitle": "Manage VPN connections"
     }
   ],
   "preferences": [
@@ -20,7 +20,6 @@
       "type": "appPicker",
       "required": false,
       "title": "Pritunl application",
-      "description": "",
       "default": "Pritunl"
     },
     {
@@ -28,7 +27,6 @@
       "type": "textfield",
       "required": false,
       "title": "Connection timeout (seconds)",
-      "description": "Time to wait for a successful connection",
       "default": "30"
     }
   ],
