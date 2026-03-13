@@ -158,6 +158,27 @@ export default function Command() {
     };
   }, []);
 
+  async function toggleAutostart(profile: Profile) {
+    const willEnable = profile.state === "Disabled";
+    const toast = await showToast({
+      style: Toast.Style.Animated,
+      title: willEnable ? "Enabling autostart\u2026" : "Disabling autostart\u2026",
+      message: profile.name,
+    });
+    try {
+      const cliPath = await getCLIPath();
+      await execAsync(`"${cliPath}" ${willEnable ? "enable" : "disable"} ${profile.id}`);
+      toast.style = Toast.Style.Success;
+      toast.title = willEnable ? "Autostart enabled" : "Autostart disabled";
+      toast.message = profile.name;
+      await loadProfiles();
+    } catch (err) {
+      toast.style = Toast.Style.Failure;
+      toast.title = "Command failed";
+      toast.message = String(err);
+    }
+  }
+
   async function toggleConnection(profile: Profile, overrideProtocol?: "ovpn" | "wg") {
     const isActive = profile.run_state === "Active";
     const effectiveProtocol = overrideProtocol ?? savedProtocols[profile.id] ?? "ovpn";
@@ -221,6 +242,7 @@ export default function Command() {
             title={profile.name}
             subtitle={profile.connected ? "Connected" : profile.status === "Connecting" || profile.status.endsWith("secs") ? "Connecting" : "Disconnected"}
             accessories={[
+              ...(profile.state === "Enabled" ? [{ tag: { value: "Autostart", color: Color.Green }, tooltip: "Autostart enabled" }] : []),
               ...(profile.connected && profile.status !== "Connecting" ? [{ text: uptime, icon: Icon.Clock, tooltip: "Uptime" }] : []),
               ...(profile.client_address ? [{ text: profile.client_address, tooltip: "Client IP" }] : []),
             ]}
@@ -247,6 +269,14 @@ export default function Command() {
                     />
                   </ActionPanel.Section>
                 )}
+                <ActionPanel.Section title="Autostart">
+                  <Action
+                    title={profile.state === "Disabled" ? "Enable Autostart" : "Disable Autostart"}
+                    icon={Icon.Power}
+                    shortcut={{ modifiers: ["cmd"], key: "e" }}
+                    onAction={() => toggleAutostart(profile)}
+                  />
+                </ActionPanel.Section>
                 <Action
                   title="Settings"
                   icon={Icon.Gear}
