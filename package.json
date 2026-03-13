@@ -19,7 +19,7 @@
       "name": "application",
       "type": "appPicker",
       "required": false,
-      "title": "Pritunl application",
+      "title": "Pritunl Application",
       "default": "Pritunl",
       "description": "Select Pritunl application from the list"
     },
@@ -27,14 +27,13 @@
       "name": "timeout",
       "type": "textfield",
       "required": false,
-      "title": "Connection timeout",
+      "title": "Connection Timeout",
       "default": "30",
       "description": "Set the timeout for VPN connection attempts in seconds (default: 30)"
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.104.9",
-    "@raycast/utils": "^2.2.1"
+    "@raycast/api": "^1.104.9"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^2.0.4",
