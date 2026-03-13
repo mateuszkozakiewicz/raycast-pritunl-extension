@@ -29,7 +29,7 @@
       "required": false,
       "title": "Connection timeout (seconds)",
       "description": "Time to wait for a successful connection",
-      "default": 30
+      "default": "30"
     }
   ],
   "dependencies": {

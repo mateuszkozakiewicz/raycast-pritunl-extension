@@ -7,7 +7,7 @@ const execAsync = promisify(exec);
 
 interface Preferences {
   application: { path: string };
-  timeout: number;
+  timeout: string;
 }
 
 interface PendingConnection {
@@ -29,8 +29,8 @@ interface Profile {
 }
 
 const CONNECT_TIMEOUT_SECS = (() => {
-  const timeout = getPreferenceValues<Preferences>().timeout;
-  return typeof timeout === "number" ? timeout : 20;
+  const timeout = Number(getPreferenceValues<Preferences>().timeout);
+  return Number.isFinite(timeout) ? timeout : 20;
 })();
 
 class InvalidCLIPathError extends Error {}
@@ -95,6 +95,13 @@ export default function Command() {
       setInvalidCLI(false);
       const freshProfiles: Profile[] = JSON.parse(stdout);
       setProfiles(freshProfiles);
+
+      if (freshProfiles.length === 0) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      }
 
       for (const [profileId, pending] of pendingRef.current.entries()) {
         const profile = freshProfiles.find((p) => p.id === profileId);
@@ -195,7 +202,7 @@ export default function Command() {
     <List.EmptyView
       icon={Icon.ExclamationMark}
       title="No profiles found"
-      description={`Make sure each profile is set as a "System Profile" in the Pritunl client (click the profile → check "System Profile")`}
+      description={`Make sure each profile is set as a "System Profile" in the Pritunl client (click the profile → Settings → enable "System Profile", disable "Autostart")`}
     />
   );
 
